@@ -1,5 +1,8 @@
 ﻿using BusinessLayer.Concrete;
+using BusinessLayer.ValidationRules;
+using DataAccsessLayer.EntityFramework;
 using EntityLayer.Concrete;
+using FluentValidation.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,23 +14,45 @@ namespace MvcForum.Controllers
     public class CategoryController : Controller
     {
         // GET: Category
-        CategoryManager cm = new CategoryManager();
+        CategoryManager cm = new CategoryManager(new EfCategoryDal());
         public ActionResult Index()
         {
             return View();
-       
+
         }
 
-        public ActionResult GetCategoryList() 
+        public ActionResult GetCategoryList()
         {
-            var categoryvalues = cm.GetAllBL();
+            var categoryvalues = cm.GetList();
             return View(categoryvalues);
         }
-       public ActionResult AddCategory(Category p)
+
+        [HttpGet]
+        public ActionResult AddCategory()
         {
-            cm.CategoryAddBL(p);
-            return RedirectToAction("GetCategoryList");
-            
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult AddCategory(Category p)
+        {
+            // cm.CategoryAddBL(p);
+            CategoryValidator categoryValidator = new CategoryValidator();
+            ValidationResult results = categoryValidator.Validate(p);
+            if (results.IsValid)
+            {
+                cm.CategoryAddBL(p);
+                return RedirectToAction("GetCategoryList");
+            }
+            else
+            {
+                foreach (var item in results.Errors)
+                {
+                    ModelState.AddModelError(item.PropertyName, item.ErrorMessage);
+                }
+            }
+            return View();
+
         }
     }
 }
