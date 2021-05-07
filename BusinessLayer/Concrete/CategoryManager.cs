@@ -21,7 +21,7 @@ namespace BusinessLayer.Concrete
 
         public void CategoryAdd(Category category)
         {
-            throw new NotImplementedException();
+            _categoryDal.Insert(category);
         }
 
         public void CategoryAddBL(Category category)
